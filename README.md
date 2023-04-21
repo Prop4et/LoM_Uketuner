@@ -89,4 +89,4 @@ What needed to change was also the coupler between the crankshaft and the actual
 
 ![circuit](images/circuit.PNG)
 
-For more information you can check the ![PDF](tex/main.pdf), the video of the tuning process can be found ![here](tuning.mp4). The quality is not the highest but i cannot help the outside noises, evnethough that demonstrates that the microphone senstivity helps.
+For more information you can check the ![PDF](tex/main.pdf), the video of the tuning process can be found ![here](https://youtu.be/HMqDMtXxrdM). The quality is not the highest but i cannot help the outside noises, evnethough that demonstrates that the microphone senstivity helps.
