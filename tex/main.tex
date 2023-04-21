@@ -61,7 +61,7 @@ The final idea that was a compromise between the two because of two main reasons
     \item costs; using four motors makes the work easier and the project would look prettier, but the trade off between costs and the actual usefulness wasn't worth it.
     \item size; using a stepper motor such the one of choice doesn't actually save space, so the solution cannot be considered portable. Also the motor needs a decent amount of power to run, so the power supply adds to that.
 \end{itemize}
-\section{System Design}
+\section{Hardware Design}
 When talking about the system design we should consider two different components. The circuit part, with the selection of the different components that create the final design, and the software developed to actually control the hardware.
 \subsection{Circuit}
 The design of the circuit went through different iterations and changed in the time, following the changes that were made because of the knowledge acquired during the development process or the necessities that needed to be satisfied to make the system work.\\
@@ -139,20 +139,61 @@ The first used stepper motor in the project is the NEMA 17HS10-0704S that is a b
         \label{fig:NEMA17-10}
     \end{center}
 \end{figure}
-As shown in the above figure the stepper has a cylindrical crankshaft that needs to be somehow connected to the uke key. There are couplers for this kind of crankshaft that can be bought but i also needed a way to connect the other end of the coupler to the key, so i decided to design my own coupler and my own connector.
+As shown in the above figure the stepper has a cylindrical crankshaft that needs to be somehow connected to the uke key. There are couplers for this kind of crankshaft that can be bought but i also needed a way to connect the other end of the coupler to the key, so i decided to design my own coupler and my own connector. In Fig. \ref{fig:coupler} the coupler design si shown; to have a more accurate view it is possible to check the \href{https://github.com/Prop4et/LoM_Uketuner/blob/master/3D/coupler_part.stl}{stl file} loaded on github. The coupler has four sockets for the screws and for the nuts that are used to tighten it to the crankshaft. Since I designed the coupler I decided to create a little slot on the top of the crankshaft section that would help in keeping in place the fork used to lock the uke key (Fig. \ref{fig:grab}).
 \begin{figure}[H]
     \centering
     \animategraphics[autoplay, loop, width=6cm]{24}{images/coupler/goupler-}{0}{167}
-    \caption{coupler}
+    \caption{Coupler}
     \label{fig:coupler}
 \end{figure}
 \begin{figure}[H]
     \centering
     \animategraphics[autoplay, loop, width=6cm]{24}{images/grab/grab-}{0}{82}
-    \caption{grab}
+    \caption{Fork}
     \label{fig:grab}
 \end{figure}
+This design had some problems and needed to go different tries before being used. The first problem was that the measures used to design all the sockets were too precise and didn't take into account the tolerances that a 3D printer has. After a couple of iterations I managed to obtain a product that was usable, but during the test phase with the motor it showed two major issues:
+\begin{itemize}
+    \item The shape of the fork wasn't able to hold the key in place correctly, letting the key sliding laterally and then out of the fork
+    \item The motor wasn't strong enought to turn the keys (I had adjusted the fork with a string on the outside that helped in keeping the key in place momentarily)
+\end{itemize}
+To solve the insufficient torque of the stepper I checked the pull out torque of the NEMA 17HS10 in Fig \ref{fig:NEMA17HS10torque} and then i tried the stepper with the settings at which the torque should be at its maximum point but it still didn't manage to turn the keys. So i changed the stepper and I went for a NEMA 17HS19 (in figure \ref{fig:nema17-19}) that has more torque and it also manages to keep almost the same amount of torque for a wider range of round per minutes (Fig. \ref{fig:NEMA17HS19torque}). This gives more room to work with and more room for error.
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=5cm]{images/nema17-19.PNG}
+        \caption{NEMA17-19}
+        \label{fig:nema17-19}
+    \end{center}
+\end{figure}
+The NEMA 17HS19 has a different crankshaft design too. There is a slice on the cylinder that made me rethink the design of the coupler not only on the fork side.
+\begin{figure}[H]
+    \centering
+    \animategraphics[autoplay, loop, width=6cm]{24}{images/grabnew/grabnew-}{0}{97}
+    \caption{Final coupler design}
+    \label{fig:grabnew}
+\end{figure}
+For a better view of the new coupler design it could be helpful to check the \href{https://github.com/Prop4et/LoM_Uketuner/blob/master/3D/grabnew.stl}{.stl file}, but the main characteristics of this new coupler are:
+\begin{itemize}
+    \item built all in one piece, allowing for more precision since there is no tolerance in the movement of the fork with respect to the crankshaft 
+    \item no screws needed, the small slice in the crankshaft allows for locking without needing to tighten the coupler, if the hole is of the right size
+    \item the fork has four cylinders in a rectangular shape to lock the keys instead of three
+\end{itemize}
+Ideally this coupler works perfectly, but there are cases that even with the sliced section it slips, so i thought about adding two screholes on a side and removing a bit of material from a section of the cylinder, leaving an open space that will close up when tightening the screws. I don't know about the bending characteristics of the PLA though, so i opted for not trying that solution.\\
+Another problem that showed with the coupler finally working is that che cylinders aren't fused strongly enouhg on the circular plate, so the strength needed to turn the keys sometimes caused a cylinder to snap.\\
+The other two designed pieces create a system to keep the stepper in place and to align it to the keys of the uke. In fact the two forward keys are at a lower height than the back ones. So i created a holder (Fig. \ref{fig:holder}) for the stepper and a platform \ref{fig:platform} in wich the holder would slot in to make up for this height difference.
+\begin{figure}[H]
+    \centering
+    \animategraphics[autoplay, loop, width=6cm]{24}{images/top/top-}{0}{91}
+    \caption{Stepper holder}
+    \label{fig:holder}
+\end{figure}\begin{figure}[H]
+    \centering
+    \animategraphics[autoplay, loop, width=6cm]{24}{images/bottom/bottom-}{0}{185}
+    \caption{Platform}
+    \label{fig:platform}
+\end{figure}
 
+\section{Software Design}
 
 \end{multicols}
 \newpage
@@ -211,6 +252,20 @@ High & High & High & 1/32 Step\\
         \includegraphics[width=14cm]{images/17HS19-2004S1.pdf}
         \caption{NEMA17HS19 from \href{http://www.omc-stepperonline.com}{Stepperonline}}
         \label{fig:NEMA17HS19}
+    \end{center}
+\end{figure}
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=14cm]{images/17HS10-0704S_Torque_Curve.pdf}
+        \caption{NEMA17HS10 Torque Curve from \href{http://www.omc-stepperonline.com}{Stepperonline}}
+        \label{fig:NEMA17HS10torque}
+    \end{center}
+\end{figure}
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=14cm]{images/17HS19-2004S1_Torque_Curve.pdf}
+        \caption{NEMA17HS19 Torque Curve from \href{http://www.omc-stepperonline.com}{Stepperonline}}
+        \label{fig:NEMA17HS19torque}
     \end{center}
 \end{figure}
 \end{document}
