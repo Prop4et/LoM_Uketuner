@@ -4,5 +4,7 @@ tex/*
 !tex/main.tex
 !tex/abstract.tex
 !tex/main.pdf
+!tex/images
+tex/images/*/
 requirements.txt
 tuning.mp4
