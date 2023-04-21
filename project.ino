@@ -4,10 +4,12 @@
 
 #define SAMPLES 128 //max amount of samples for arduino uno
 #define SAMPLING_FREQUENCY 2048 //must be 2*highest expected frequency, A is 440Hz and after 630Hz seems like it's about to snap
-
+#define SCREENLEN 17
+#define FULLSTEPS 400
 #define MAXFREQ 500.00
 #define MINFREQ 225.00
-#define printTolerance 10
+
+#define PRINTTOLERANCE 10
 
 #define NTUNEALL 14
 #define NTUNE 4
@@ -20,12 +22,10 @@
 #define btnPin 3 //switch pin
 #define rotatePin 2//pin to rotate the motor
 #define potenPin A1 //potentiometer reading pin
-#define SCREENLEN 17
+ //complete circle at half step
 
-#define FULLSTEPS 400 //complete circle at half step
-
-const int stepPin = 12;
-const int dirPin = 11;
+#define stepPin 12;
+#define dirPin 11;
 int delayRotation = 0;
 //AccelStepper myStepper(motorInterfaceType, stepPin, dirPin);
 
@@ -73,8 +73,6 @@ void setup() {
   lcd.backlight();
   lcd.clear();
   lcd.setCursor(0, 0);
-  //lcd.print(sel);
-  //lcd.setCursor(strlen(sel), 0);
   lcd.print(beginSentence);
 
   //setup mic pin
@@ -101,8 +99,6 @@ void setup() {
   samplingPeriod = round(1000000 * (1.0 / SAMPLING_FREQUENCY));
   
   //setup motor parameters
-  //myStepper.setMaxSpeed(600);
-  //myStepper.setAcceleration(600);
   scrollTime = millis();
 }
 
@@ -284,7 +280,7 @@ void loop () {
     //select played frequency to print
     int i = 0;
     if(!freqOOB){
-      while (i < NTUNEALL-1 && !(freq >= tunesFreq[i] + printTolerances[i] - printTolerance && freq < tunesFreq[i+1]))
+      while (i < NTUNEALL-1 && !(freq >= tunesFreq[i] + printTolerances[i] - PRINTTOLERANCE && freq < tunesFreq[i+1]))
         i += 1;
       freq - tunesFreq[i] < tunesFreq[i+1] - freq ? i : i+=1;
       freqOOB = false;
@@ -300,14 +296,14 @@ void loop () {
     if (!freqOOB && (freqs[currTune] + tolerances[currTune] - ranges[currTune] <= freq) && (freqs[currTune] + tolerances[currTune] + ranges[currTune] >= freq) && i != NTUNEALL){
       blink(greenLedPin);  
     }
-    else {
+    else if(!freqOOB) {
+      float freqDiff = abs(freq - (freqs[currTune]+tolerances[currTune]));
+      int dir = 0; 
+      blink(redLedPin);
       if(currTune == 1 && freq > 360){
          spin(1, 4, 0);
          return;
       }
-      float freqDiff = abs(freq - (freqs[currTune]+tolerances[currTune]));
-      int dir = 0; 
-      blink(redLedPin);
       //tuning = true;
       int stepDiff = 0;
       int findex = i;
