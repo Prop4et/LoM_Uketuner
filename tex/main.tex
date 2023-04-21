@@ -192,9 +192,35 @@ The other two designed pieces create a system to keep the stepper in place and t
     \caption{Platform}
     \label{fig:platform}
 \end{figure}
-
+The final pinout for the circuit is at \ref{fig:pinout}
 \section{Software Design}
+Everthing in the tuner is handled by an Arduino UNO R3. This board was chosen because it is easy to program, it has a lot of different libraries and i actually had the board already. There are some limitations in using the Arduino UNO R3 for this project, such as the memory used to collect the frequency samples or the time that an analogRead takes on the Arduino UNO R3.\\
+The software for the tuner is made of three main different parts that interacts between them, the LCD, the microphone and the stepper.\\
+\subsection{LCD}
+The LCD is handled through the \textit{LiquidCrystal\_I2C} library that allows for easy read and writes through the LCD I2C bus. By default the LCD address is 0x27 and this value is passed as a parameter for the initialization of the LCD object, together with the number of columns and the number of rows. The library is based on the Wire.h library for the IIC communication and by default this library uses the A4 pin for the data line and the A5 for the clock line (on the Arduino UNO).\\
+The only self implemented function was the scroll function. The default one in fact would scroll until the end of the line and then will fill the screen with blank spaces until the first character of the sequence and start it again. I didn't like this effect and i wanted the sentece to restart right after the last letter, so i made my own function. On the LCD the currently selected string to tune is shown and it also shows the most recently played note. The scroll doesn't stop during the blinking of the led, but it stops during the period in which the stepper turns. The call to write to the I2C was to slow and stopped the rotation of the stepper so instead of stopping the stepper i decided to stop the writing process.
 
+\subsection(Stepper)
+The stepper motor is controlled only through two pins from the Arduino. Initially I tested the stepper with the raw code that sent a pulse to the STP pin every 2000$\mu$s to see if it worked. Then i went ahead and used the AccelStepper library that allowed to control the acceleration of the stepper and also to set a limit speed. That way i was able to check if the stepper was able to turn the keys at max torque since i had the value for the speed. Also the half step pin was connected on the driver to allow for both more precision and more torque.\\
+The thing I didn't like about the AccelStepper library is the smooth acceleration that is given to reach the speed, so i reverted back to the raw code and tested which was a reasonable interval of pulses to make the stepper turn the uke keys. To do so i added the button and the potentiometer that allowed me to change the interval in real time, as a function of the resistance read by the potentiometer. This mechanism then stayed in the circuit and it is used to align the coupler fork to the uke key when the string that needs tuning is changed.
+
+\subsection{Microphone}
+The microphone was probably the most difficult thing to handle by the software, and the piece where the Arduino limitations showed up more.\\
+Firstly the digital pin value is read at every loop to see if a sound is detected. If that's the case then the analog input is read and that is passed to the ArduinoFFT library. The arduinoFFT library is the library that helps in generating a Fourier transofmration of the signal, the fast derives from the mathematical method used that helps in reducing the complexity of the classic method to compute the Fourier transofmration. \\
+First of all a sampling interval should be defined; to have a decent sampling the sampling frequency should be two times the highest frequency that needs to be sampled. The highest note on a string on the uke is at 440Hz, and the uke string seems to be almost snapping at 630Hz. The Arduino UNO has a clock frequency of 8MHz (16Mhz if using the crystal oscillator), so it should handle a sampling with a frequency of 2048Hz.
+\[sampling\_period[\mu s] =\]
+\[=round(1000000 * (1.0 / SF));\]
+The second factor that influences the sampling is the amount of samples that could possibly be taken. The Arduino UNO doens't have a lot of memory, so it is possible to get maximum 128 samples.\\
+The samples are then passed to the ArduinoFFT library, the real part of the values is used for the windowing function and then it is computed while the imaginary data must be put at 0 during the sampling step to avoid wrong calculations and overflows. Finally the major peak is extracted, giving the frequency of the note played.\\
+This mechanism works pretty well but every note played has its own tolerance, and this tolerance has been measured by comparing the actual frequency of the string played when in tune (measure with another tuned) and the frequency returned by the ArduinoFFT library. After this process the \textit{tolerances} array was created. Another problem that the ArduinoFFT library has is that it isn't able to precisly recognize the lower (below B3) notes; instead of recognizing the right note it goes an octave higher and recognizes it as A4 or something in that range. So in case the C4 string is lower the code cheats and brings the string to a more understandable tune.
+
+In the end the stepper spins following a simple formula. If the difference between the played tune and the desired tune is higher than 2 then it spins for at least a complete revolution. Otherwise it checks if the difference in frequency is high enough. If it is it spins for half a revolution, otherwise it spins for a number of step proportional to the frequency difference multiplied for a random factor between 10 and 15.\\
+This random factor was determined after observing that with a factor of 15 the tuning process would usually get to the right tune pretty fast, but it could get stuck on some frequency since the key was always turned of the same amount, only changing the direction. The randomness helps in resolving this issuse.
+\section{Conclusions}
+In conclusion I would say that through this project I learned a lot more about stepper motors and interestengly enough the thing that I learned to do the most is design 3D parts that can then be printed. I don't own a 3D printer and I have never designed something in 3D before, so picking up this skill was interesting and it actually made me curiuos about 3D printers.\\
+At the end of the project a box to contain all the circuitry was designed but it wasn't possible to print it since the high amount of time it needed and I don't own a 3D printer, the design is however present in Fig. \ref{fig:topbox} and in Fig. \ref{fig:botbox}. I decided to solder the circuit anyway, because it made me think it could give a sense of precision but without touching the Arduino (it could come in handy for other projects). The final result, without the box, isn't the most attractive one \ref{fig:final}.
+\subsection{Final considerations}
+There is room for improvements under every aspect. The possibility to create a box to contain everything, the idea of putting 4 different steppers with a clever design to hold the motor in place, the implementation of automatic recognition of the string that needs to be tuned and also the optimal utilization of the DRV8825 driver by using the SLP pin to put it to sleep and other little improvements.
 \end{multicols}
 \newpage
 \section{Appendix}
@@ -268,4 +294,34 @@ High & High & High & 1/32 Step\\
         \label{fig:NEMA17HS19torque}
     \end{center}
 \end{figure}
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=14cm]{images/top_container.PNG}
+        \caption{Top section of the Box}
+        \label{fig:topbox}
+    \end{center}
+\end{figure}
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=14cm]{images/bottom_container.PNG}
+        \caption{Bottom section of the Box}
+        \label{fig:botbox}
+    \end{center}
+\end{figure}
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=14cm]{images/circuit.PNG}
+        \caption{Circuit pinout}
+        \label{fig:pinout}
+    \end{center}
+\end{figure}
+
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=14cm]{images/final.jpg}
+        \caption{Final product}
+        \label{fig:final}
+    \end{center}
+\end{figure}
+
 \end{document}
