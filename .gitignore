@@ -1,0 +1,7 @@
+.vscode
+model_files
+tex/*
+!tex/main.tex
+!tex/abstract.tex
+!tex/main.pdf
+requirements.txt
