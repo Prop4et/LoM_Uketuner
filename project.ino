@@ -258,7 +258,7 @@ void loop () {
       }
     }
 
-
+    freqOOB = false;
     //process to FFT the samples
     FFT.Windowing(vReal, SAMPLES, FFT_WIN_TYP_HANN, FFT_FORWARD);
     FFT.Compute(vReal, vImg, SAMPLES, FFT_FORWARD);
