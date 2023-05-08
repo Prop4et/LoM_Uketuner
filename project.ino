@@ -257,7 +257,7 @@ void loop () {
       }
     }
 
-
+    freqOOB = false;
     //process to FFT the samples
     arduinoFFT FFT = arduinoFFT(vReal, vImg, SAMPLES, SAMPLING_FREQUENCY);
     FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
