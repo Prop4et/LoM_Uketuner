@@ -94,5 +94,6 @@ What needed to change was also the coupler between the crankshaft and the actual
 ![](gifs/top.gif)
 Every 3D model is [here](https://github.com/Prop4et/LoM_Uketuner/tree/master/3D)
 ![circuit](tex/images/circuit.PNG)
+![circuit](tex/images/pinout_scheme.png)
 ![final](tex/images/final.jpg)
 For more information you can check the [PDF](tex/main.pdf), the video of the tuning process can be found [here](https://youtu.be/HMqDMtXxrdM). The quality is not the highest but i cannot help the outside noises, eventhough that demonstrates that the microphone senstivity helps.
