@@ -34,7 +34,6 @@ int delayRotation = 0;
 const float printTolerances[NTUNEALL] = {2, 2, 3.3, 5, 4, 4, 6, 6, 5.5, 8, 6, 8.5, 7, 6};
 const float tunesFreq[NTUNEALL] = {233.08, 246.94, 261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 369.99, 392.00, 415.30, 440.00, 466.16, 493.88};
 const char* tunesAll[NTUNEALL] = {"A3", "B3", "C4", "C4#", "D4", "D4#", "E4", "F4", "F4#", "G4", "G4#", "A4", "A4#", "B4"};
-arduinoFFT FFT = arduinoFFT();
 
 
 unsigned int samplingPeriod;
@@ -260,12 +259,13 @@ void loop () {
 
 
     //process to FFT the samples
-    FFT.Windowing(vReal, SAMPLES, FFT_WIN_TYP_HANN, FFT_FORWARD);
-    FFT.Compute(vReal, vImg, SAMPLES, FFT_FORWARD);
-    FFT.ComplexToMagnitude(vReal, vImg, SAMPLES);
+    arduinoFFT FFT = arduinoFFT(vReal, vImg, SAMPLES, SAMPLING_FREQUENCY);
+    FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
+    FFT.Compute(FFT_FORWARD);
+    FFT.ComplexToMagnitude();
 
     //find the "main" frequency
-    double freq = FFT.MajorPeak(vReal, SAMPLES, SAMPLING_FREQUENCY);
+    double freq = FFT.MajorPeak();
     Serial.println(freq);
     //working on the frequency
     //frequency out of bounds
